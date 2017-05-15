@@ -153,9 +153,28 @@ You might use the `--no-cache` option if you want full rebuilding (`docker-compo
 
 
 
+<br>
+<a name="Docker-Sync"></a>
+
+## Docker-Sync
+
+Docker on the Mac [is slow](https://github.com/docker/for-mac/issues/77), at the time of writing. Especially for larger projects, this can be a problem. The problem is [older than March 2016](https://forums.docker.com/t/file-access-in-mounted-volumes-extremely-slow-cpu-bound/8076) - as it's a such a long-running issue, we're including it in the docs here. 
+
+The problem originates in bind-mount performance on MacOS. Docker for Mac uses osxfs by default. This is not without reason, it has [a lot of advantages](https://docs.docker.com/docker-for-mac/osxfs/).
+
+Solutions to resolve this issue are easily installed however, we're hoping it'll be fixed by Docker themselves over time. They are currently [adding "cached and delegated" options](https://github.com/docker/for-mac/issues/77#issuecomment-283996750), which is partly available for Docker Edge.
+
+Options are [to switch over to NFS](https://github.com/IFSight/d4m-nfs) which is the simplest. The fastest option is [Docker-Sync "native"](https://github.com/EugenMayer/docker-sync) which is still quite easy to install.
+
+Clone [this repo](https://github.com/EugenMayer/docker-sync-boilerplate) to your machine, copy `default/docker-sync.yml` to your Laradock directory and run `docker-sync-stack start`. Be sure to use `docker-sync-stack clean` to stop and `docker-compose build` to rebuild. More information can be found [in the Docker-sync docs](https://github.com/EugenMayer/docker-sync).
+
+
+
+
 
 <br>
 <a name="Add-Docker-Images"></a>
+
 ## Add more Software (Docker Images)
 
 To add an image (software), just edit the `docker-compose.yml` and add your container details, to do so you need to be familiar with the [docker compose file syntax](https://docs.docker.com/compose/compose-file/).
@@ -336,11 +355,11 @@ By installing xDebug, you are enabling it to run on startup by default.
 
 To control the behavior of xDebug (in the `php-fpm` Container), you can run the following commands from the Laradock root folder, (at the same prompt where you run docker-compose):
 
-- Stop xDebug from running by default: `./xdebugPhpFpm stop`.
-- Start xDebug by default: `./xdebugPhpFpm start`.
-- See the status: `./xdebugPhpFpm status`.
+- Stop xDebug from running by default: `.php-fpm/xdebug stop`.
+- Start xDebug by default: `.php-fpm/xdebug start`.
+- See the status: `.php-fpm/xdebug status`.
 
-Note: If `./xdebugPhpFpm` doesn't execute and gives `Permission Denied` error the problem can be that file `xdebugPhpFpm` doesn't have execution access. This can be fixed by running `chmod` command  with desired access permissions.
+Note: If `.php-fpm/xdebug` doesn't execute and gives `Permission Denied` error the problem can be that file `xdebug` doesn't have execution access. This can be fixed by running `chmod` command  with desired access permissions.
 
 
 
@@ -699,6 +718,8 @@ docker-compose up -d mysql phpmyadmin
 docker-compose up -d mariadb phpmyadmin
 ```
 
+*Note: To use with MariaDB, open `.env` and set `PMA_DB_ENGINE=mysql` to `PMA_DB_ENGINE=mariadb`.*
+
 2 - Open your browser and visit the localhost on port **8080**:  `http://localhost:8080`
 
 
@@ -718,6 +739,7 @@ docker-compose up -d adminer
 
 2 - Open your browser and visit the localhost on port **8080**:  `http://localhost:8080`
 
+**Note:** We've locked Adminer to version 4.3.0 as at the time of writing [it contained a major bug](https://sourceforge.net/p/adminer/bugs-and-features/548/) preventing PostgreSQL users from logging in. If that bug is fixed (or if you're not using PostgreSQL) feel free to set Adminer to the latest version within [the Dockerfile](https://github.com/laradock/laradock/blob/master/adminer/Dockerfile#L1): `FROM adminer:latest`
 
 
 
@@ -1236,11 +1258,11 @@ You are free to modify the `aliases.sh` as you see fit, adding your own aliases 
 <br>
 a) open the `docker-compose.yml` file
 <br>
-b) search for the `INSTALL_AEROSPIKE_EXTENSION` argument under the Workspace Container
+b) search for the `INSTALL_AEROSPIKE` argument under the Workspace Container
 <br>
 c) set it to `true`
 <br>
-d) search for the `INSTALL_AEROSPIKE_EXTENSION` argument under the PHP-FPM Container
+d) search for the `INSTALL_AEROSPIKE` argument under the PHP-FPM Container
 <br>
 e) set it to `true`
 
@@ -1251,13 +1273,13 @@ It should be like this:
         build:
             context: ./workspace
             args:
-                - INSTALL_AEROSPIKE_EXTENSION=true
+                - INSTALL_AEROSPIKE=true
     ...
     php-fpm:
         build:
             context: ./php-fpm
             args:
-                - INSTALL_AEROSPIKE_EXTENSION=true
+                - INSTALL_AEROSPIKE=true
     ...
 ```
 
